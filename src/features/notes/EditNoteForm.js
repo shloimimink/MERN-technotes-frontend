@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react"
-import { useUpdateNoteMutation, useDeleteNoteMutation } from "./notesApiSlice"
-import { useNavigate } from "react-router-dom"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import {useState, useEffect} from "react"
+import {useUpdateNoteMutation, useDeleteNoteMutation} from "./notesApiSlice"
+import {useNavigate} from "react-router-dom"
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faSave, faTrashCan} from "@fortawesome/free-solid-svg-icons"
+import useAuth from "../../hooks/useAuth"
 
-const EditNoteForm = ({ note, users }) => {
+const EditNoteForm = ({note, users}) => {
+
+    const {isManager, isAdmin} = useAuth()
 
     const [updateNote, {
         isLoading,
@@ -46,16 +49,30 @@ const EditNoteForm = ({ note, users }) => {
 
     const onSaveNoteClicked = async (e) => {
         if (canSave) {
-            await updateNote({ id: note.id, user: userId, title, text, completed })
+            await updateNote({id: note.id, user: userId, title, text, completed})
         }
     }
 
     const onDeleteNoteClicked = async () => {
-        await deleteNote({ id: note.id })
+        await deleteNote({id: note.id})
     }
 
-    const created = new Date(note.createdAt).toLocaleString('en-US', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
-    const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
+    const created = new Date(note.createdAt).toLocaleString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+    })
+    const updated = new Date(note.updatedAt).toLocaleString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+    })
 
     const options = users.map(user => {
         return (
@@ -63,7 +80,7 @@ const EditNoteForm = ({ note, users }) => {
                 key={user.id}
                 value={user.id}
 
-            > {user.username}</option >
+            > {user.username}</option>
         )
     })
 
@@ -72,6 +89,20 @@ const EditNoteForm = ({ note, users }) => {
     const validTextClass = !text ? "form__input--incomplete" : ''
 
     const errContent = (error?.data?.message || delerror?.data?.message) ?? ''
+
+
+    let deleteButton = null
+    if (isManager || isAdmin) {
+        deleteButton = (
+            <button
+                className="icon-button"
+                title="Delete"
+                onClick={onDeleteNoteClicked}
+            >
+                <FontAwesomeIcon icon={faTrashCan}/>
+            </button>
+        )
+    }
 
     const content = (
         <>
@@ -87,15 +118,9 @@ const EditNoteForm = ({ note, users }) => {
                             onClick={onSaveNoteClicked}
                             disabled={!canSave}
                         >
-                            <FontAwesomeIcon icon={faSave} />
+                            <FontAwesomeIcon icon={faSave}/>
                         </button>
-                        <button
-                            className="icon-button"
-                            title="Delete"
-                            onClick={onDeleteNoteClicked}
-                        >
-                            <FontAwesomeIcon icon={faTrashCan} />
-                        </button>
+                        {deleteButton}
                     </div>
                 </div>
                 <label className="form__label" htmlFor="note-title">
@@ -146,8 +171,8 @@ const EditNoteForm = ({ note, users }) => {
                         </select>
                     </div>
                     <div className="form__divider">
-                        <p className="form__created">Created:<br />{created}</p>
-                        <p className="form__updated">Updated:<br />{updated}</p>
+                        <p className="form__created">Created:<br/>{created}</p>
+                        <p className="form__updated">Updated:<br/>{updated}</p>
                     </div>
                 </div>
             </form>

@@ -1,20 +1,23 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons"
-import { useNavigate } from 'react-router-dom'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faPenToSquare} from "@fortawesome/free-solid-svg-icons"
+import {useNavigate} from 'react-router-dom'
+import {useGetNotesQuery} from './notesApiSlice'
+import {memo} from 'react'
 
-import { useSelector } from 'react-redux'
-import { selectNoteById } from './notesApiSlice'
+const Note = ({noteId}) => {
 
-const Note = ({ noteId }) => {
-
-    const note = useSelector(state => selectNoteById(state, noteId))
+    const {note} = useGetNotesQuery("notesList", {
+        selectFromResult: ({data}) => ({
+            note: data?.entities[noteId]
+        }),
+    })
 
     const navigate = useNavigate()
 
     if (note) {
-        const created = new Date(note.createdAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
+        const created = new Date(note.createdAt).toLocaleString('en-US', {day: 'numeric', month: 'long'})
 
-        const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
+        const updated = new Date(note.updatedAt).toLocaleString('en-US', {day: 'numeric', month: 'long'})
 
         const handleEdit = () => navigate(`/dash/notes/${noteId}`)
 
@@ -36,7 +39,7 @@ const Note = ({ noteId }) => {
                         className="icon-button table__button"
                         onClick={handleEdit}
                     >
-                        <FontAwesomeIcon icon={faPenToSquare} />
+                        <FontAwesomeIcon icon={faPenToSquare}/>
                     </button>
                 </td>
             </tr>
@@ -44,4 +47,7 @@ const Note = ({ noteId }) => {
 
     } else return null
 }
-export default Note
+
+const memoizedNote = memo(Note)
+
+export default memoizedNote
